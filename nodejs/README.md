@@ -1,98 +1,39 @@
-# Camunda Platform 8 - Get Started - Node.js
+# Uber BPMN Model Implementation - Node.js
 
-This guide explains how to setup a node.js project to automate a process using
-[Camunda Platform 8](https://camunda.com/products/cloud/).
+This repository contains the implementation of an Uber BPMN model using Camunda and Node.js.
 
-# Install dependencies
+## Setup Instructions
 
-The open source library [zeebe-node](https://www.npmjs.com/package/zeebe-node)
-provides a Zeebe client.
+1. Clone the repository:
+   ```bash
+   git clone git@github.com:umutyesildal/UE2BPA.git
 
-```
-npm install --save zeebe-node
-```
+2. Navigate to the Node.js directory:
 
-# Create Client
+   ```bash
+   cd node.js
+   
+3. Install the required dependencies:
 
-If we want to connect to a Camunda Platform 8 SaaS cluster we need the `clusterId`
-from the [Clusters details
-page](https://docs.camunda.io/docs/components/console/manage-clusters/create-cluster/),
-a `clientId` and `clientSecret` from a [client credentials
-pair](https://docs.camunda.io/docs/components/console/manage-clusters/manage-api-clients/). 
+   ```bash
+   npm install --save zeebe-node
 
-```javascript
-const { ZBClient } = require('zeebe-node')
+4. Deploy and start an instance of the Uber BPMN model:
 
-const zbc = new ZBClient({
-	camundaCloud: {
-		clusterId: '365eed98-16c1-4096-bb57-eb8828ed131e',
-		clientId: 'GZVO3ALYy~qCcD3MYq~sf0GIszNzLE_z',
-		clientSecret: '.RPbZc6q0d6uzRbB4LW.B8lCpsxbBEpmBX0AHQGzINf3.KK9RkzZW1aDaZ-7WYNJ',
-	},
-})
-```
+   ```bash
+   node deploy-and-start-instance.js
+   
+5. Activate workers for service tasks:
 
-If you are using a self managed Camunda Platform 8 cluster, you create the client
-without parameters.
-
-```javascript
-const { ZBClient } = require('zeebe-node')
-
-const zbc = new ZBClient()
-```
+   ```bash
+   node service-task-workers.js
 
 
-# Deploy Process and Start Instance
+## Workflow Execution
 
-To deploy a process you have to specify the filepath of the BPMN file.
+*User Tasks:* Utilize forms provided by Camunda for each user task to collect necessary information from the user.
 
-```
-await zbc.deployProcess(['../process/send-email.bpmn'])
-```
+*Driver Assignment* (Service Task): A worker is implemented to randomly choose a driver for the ride.
 
-To start a new instance you have to specify the `bpmnProcessId`, i.e.
-`send-email` and **optionally** process variables.
+*Rating Submission:* At the end of the process, a worker handles the rating submission based on the user's experience.
 
-```
-const result = await zbc.createProcessInstance('send-email', {
-	message_content: 'Hello from the node.js get started',
-})
-console.log(result)
-```
-
-For the complete code see the
-[`deploy-and-start-instance.js`](deploy-and-start-instance.js) file. You can
-run it using the following command.
-
-```bash
-node deploy-and-start-instance.js
-```
-
-# Job Worker
-
-To complete a [service
-task](https://docs.camunda.io/docs/reference/bpmn-processes/service-tasks/service-tasks/),
-a [job
-worker](https://docs.camunda.io/docs/product-manuals/concepts/job-workers) has
-to be subscribed the to task type defined in the process, i.e. `email`.
-
-```
-zbc.createWorker({
-	taskType: 'email',
-	taskHandler: (job, _, worker) => {
-		const { message_content } = job.variables
-		worker.log(`Sending email with message content: ${message_content}`)
-		job.complete()
-	}
-})
-```
-
-For the complete code see the [`email-worker.js`](email-worker.js) file. You can
-run it using the following command.
-
-```bash
-node email-worker.js
-```
-
-To make an job available, a user task has to be completed, follow the
-instructions in [the guide](../README.md#complete-the-user-task).
