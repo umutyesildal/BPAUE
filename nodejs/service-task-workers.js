@@ -39,7 +39,7 @@ function getUberDriverName(inputString) {
 
   function appendRatingToDriver(driverName,driverRating) {
   // Appending the rating to the driver name
-  const driverWithRating = `${driverName} - Rating: ${driverRating}`;
+  const driverWithRating = `${driverName} got rating: ${driverRating}`;
 
   return driverWithRating;
 
@@ -48,8 +48,7 @@ function getUberDriverName(inputString) {
 const workerDestination = zbc.createWorker({
 	taskType: 'destination_select',
 	taskHandler: (job) => {
-		workerDestination.log(`Sending email with message content: ${job.variables}`)
-	
+		workerDestination.log(`Selected destination ${job.variables["destination"]}`)	
 		job.complete()
 	}
 })
@@ -57,8 +56,8 @@ const workerDestination = zbc.createWorker({
 const workerDriver = zbc.createWorker({
 	taskType: 'choose_driver',
 	taskHandler: (job) => {
-		workerDriver.log(`Message content: ${JSON.stringify(job.variables)}`)
 		driverName = getUberDriverName(job.variables["destination"])
+		workerDriver.log(`${driverName} will drive you`)
 		job.complete({
 			driver_name: driverName,
 		  });	}
@@ -67,11 +66,9 @@ const workerDriver = zbc.createWorker({
 const workerRating = zbc.createWorker({
 	taskType: 'append-rating',
 	taskHandler: (job) => {
-		workerRating.log(`Message content: ${JSON.stringify(job.variables)}`)
-		appendRatingToDriver(job.variables["driver_name"],job.variables["rating_value"])
+		workerRating.log(appendRatingToDriver(job.variables["driver_name"],job.variables["rating_value"]))
 		job.complete({
 			driver_name: job.variables["driver_name"],
 			rating: job.variables["rating_value"]
-
 		  });	}
 })
