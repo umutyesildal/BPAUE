@@ -11,10 +11,5 @@ void (async () => {
 
 	await zbc.deployProcess(['rider.bpmn'])
 
-	const result = await zbc.createProcessInstance('choose_driver', {
-		message_content: 'Hello from the node.js get started',
-	})
-
-	console.log(result)
 	process.exit(0)
 })()

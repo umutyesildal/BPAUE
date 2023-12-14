@@ -8,21 +8,21 @@ const zbc = new ZBClient({
 	},
 })
 
+const driverNames = [
+	"Alex",
+	"Emma",
+	"Max",
+	"Olivia",
+	"Sophia",
+	"Liam",
+	"Lucas",
+	"Umut",
+	"Jonas"
+  ];
 
 function getUberDriverName(inputString) {
-	const driverNames = [
-	  "Alex",
-	  "Emma",
-	  "Max",
-	  "Olivia",
-	  "Sophia",
-	  "Liam",
-	  "Lucas",
-	  "Umut",
-	  "Jonas"
-	];
-  
-	if (inputString.length > 6) {
+
+  if (inputString.length > 6) {
 	  // If the input string is longer than 6 characters, return a different random name
 	  const filteredNames = driverNames.filter(name => name !== inputString);
 	  const randomName = filteredNames[Math.floor(Math.random() * filteredNames.length)];
@@ -37,6 +37,14 @@ function getUberDriverName(inputString) {
 	}
   }
 
+  function appendRatingToDriver(driverName,driverRating) {
+  // Appending the rating to the driver name
+  const driverWithRating = `${driverName} - Rating: ${driverRating}`;
+
+  return driverWithRating;
+
+
+  }
 const workerDestination = zbc.createWorker({
 	taskType: 'destination_select',
 	taskHandler: (job) => {
@@ -46,12 +54,24 @@ const workerDestination = zbc.createWorker({
 	}
 })
 
-const worker = zbc.createWorker({
+const workerDriver = zbc.createWorker({
 	taskType: 'choose_driver',
 	taskHandler: (job) => {
-		worker.log(`Sending email with message content: ${JSON.stringify(job.variables)}`)
+		workerDriver.log(`Message content: ${JSON.stringify(job.variables)}`)
 		driverName = getUberDriverName(job.variables["destination"])
 		job.complete({
 			driver_name: driverName,
+		  });	}
+})
+
+const workerRating = zbc.createWorker({
+	taskType: 'append-rating',
+	taskHandler: (job) => {
+		workerRating.log(`Message content: ${JSON.stringify(job.variables)}`)
+		appendRatingToDriver(job.variables["driver_name"],job.variables["rating_value"])
+		job.complete({
+			driver_name: job.variables["driver_name"],
+			rating: job.variables["rating_value"]
+
 		  });	}
 })
